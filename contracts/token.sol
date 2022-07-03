@@ -3,32 +3,27 @@
 pragma solidity ^0.8.4;
 
 /**
- * @title ERC20
+ * @title Token
  * @dev Implementation of the ERC20 standard token.
  */
 contract Token {
-
     string private _name;
     string private _symbol;
 
     uint8 private _decimals;
     uint256 private _totalSupply;
-    
+
     address public owner;
 
     mapping(address => uint) private _balanceOf;
 
     mapping(address => mapping(address => uint)) private _allowed;
 
-    event Transfer (
-        address indexed _from, 
-        address indexed _to, 
-        uint256 _value
-    );
+    event Transfer(address indexed _from, address indexed _to, uint256 _value);
 
-    event Approval (
-        address indexed _owner, 
-        address indexed _spender, 
+    event Approval(
+        address indexed _owner,
+        address indexed _spender,
         uint256 _value
     );
 
@@ -41,10 +36,10 @@ contract Token {
     /**
      * @dev Set the values for {_name}, {_symbol}, {_decimals}, and {_totalSupply}.
      */
-    constructor (
+    constructor(
         string memory name_,
-        string memory symbol_, 
-        uint8 decimals_, 
+        string memory symbol_,
+        uint8 decimals_,
         uint256 initialSupply_
     ) {
         owner = msg.sender;
@@ -86,7 +81,7 @@ contract Token {
     function totalSupply() public view returns (uint256) {
         return _totalSupply;
     }
-    
+
     /**
      * @dev Return the amount of tokens owned by a account.
      * @param _owner address to query the balance of.
@@ -102,7 +97,10 @@ contract Token {
      * @param _value uin256 The amount of tokens to be transferred.
      * @return success boolean indicating the transactions suceeded.
      */
-    function transfer(address _to, uint256 _value) public returns (bool success) {
+    function transfer(address _to, uint256 _value)
+        public
+        returns (bool success)
+    {
         require(_to != address(0), "Transfer to the zero address!");
         require(_balanceOf[msg.sender] >= _value, "Insufficient tokens!");
         _balanceOf[_to] += _value;
@@ -119,11 +117,18 @@ contract Token {
      * @param _value uint256 amount of tokens to be transferred.
      * @return success boolean indicating the trasaction succeeded.
      */
-    function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) {
+    function transferFrom(
+        address _from,
+        address _to,
+        uint256 _value
+    ) public returns (bool success) {
         require(_to != address(0), "Transfer to the zero address!");
         require(_balanceOf[_from] >= _value, "Insufficient tokens!");
-        require(_allowed[_from][msg.sender] >= _value, "Insufficient allowance!");
-        
+        require(
+            _allowed[_from][msg.sender] >= _value,
+            "Insufficient allowance!"
+        );
+
         _balanceOf[_from] -= _value;
         _balanceOf[_to] += _value;
         _allowed[_from][msg.sender] -= _value;
@@ -138,7 +143,10 @@ contract Token {
      * @param _value uin256 amount of tokens to be spent.
      * @return success boolean indicating the trasaction succeeded.
      */
-    function approve(address _spender, uint256 _value) public returns (bool success) {
+    function approve(address _spender, uint256 _value)
+        public
+        returns (bool success)
+    {
         require(_spender != address(0), "Approve to the zero address!");
         _allowed[msg.sender][_spender] += _value;
         emit Approval(msg.sender, _spender, _value);
@@ -151,7 +159,11 @@ contract Token {
      * @param _spender address which will spend the funds.
      * @return remaining uint256 specifying the amount of tokens still available for the spender.
      */
-    function allowance(address _owner, address _spender) public view returns (uint256 remaining) {
+    function allowance(address _owner, address _spender)
+        public
+        view
+        returns (uint256 remaining)
+    {
         return _allowed[_owner][_spender];
     }
 
@@ -161,20 +173,23 @@ contract Token {
      * @param _to address which will receive the created tokens.
      * @param _value uint256 amount that will be created.
      */
-    function mint(address _to , uint256 _value) public onlyOwner {
+    function mint(address _to, uint256 _value) public onlyOwner {
         require(_to != address(0), "Mint to the zero address!");
         _totalSupply += _value;
         _balanceOf[_to] += _value;
 
         emit Transfer(address(0), _to, _value);
     }
-    
+
     /**
      * @dev Burn an amount of the token of the caller, reducing the total supply
      * @param _value uint256 amount that will be burnt.
      */
     function burn(uint256 _value) public {
-        require(_balanceOf[msg.sender] >= _value, "Burn amount exceeds balance!");
+        require(
+            _balanceOf[msg.sender] >= _value,
+            "Burn amount exceeds balance!"
+        );
         _totalSupply -= _value;
         _balanceOf[msg.sender] -= _value;
 
@@ -182,7 +197,7 @@ contract Token {
     }
 
     /**
-     * @dev Burn an amount of the token of a given account, 
+     * @dev Burn an amount of the token of a given account,
      * reducing the total supply and allowance.
      * @param _from address whose tokens will be burnt.
      * @param _value uint256 amount that will be burnt.
@@ -190,7 +205,10 @@ contract Token {
     function burnFrom(address _from, uint256 _value) public {
         require(_from != address(0), "Burn from the zero address!");
         require(_balanceOf[_from] >= _value, "Burn amount exceeds balance!");
-        require(_allowed[_from][msg.sender] >= _value, "Insufficient allowance!");
+        require(
+            _allowed[_from][msg.sender] >= _value,
+            "Insufficient allowance!"
+        );
 
         _totalSupply -= _value;
         _balanceOf[_from] -= _value;
@@ -198,5 +216,4 @@ contract Token {
 
         emit Transfer(_from, address(0), _value);
     }
-
 }
