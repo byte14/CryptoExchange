@@ -111,7 +111,10 @@ contract Exchange {
         address _tokenSell,
         uint256 _amountSell
     ) public {
-        // require(tokens[_tokenSell][msg.sender] >= _amountSell);
+        require(
+            tokens[_tokenSell][msg.sender] >= _amountSell,
+            "Not enough tokens"
+        );
         orderCount += 1;
         orders[orderCount] = _Order(
             orderCount,
@@ -135,8 +138,8 @@ contract Exchange {
 
     function cancelOrder(uint256 _id) public {
         _Order storage _order = orders[_id];
-        require(msg.sender == _order.user, "Order is not yours");
         require(_id == _order.id, "Order does not exist");
+        require(msg.sender == _order.user, "Order is not yours");
         cancelledOrder[_id] = true;
         emit Cancel(
             _order.id,
@@ -175,13 +178,17 @@ contract Exchange {
         address _tokenSell,
         uint256 _amountSell
     ) internal {
-        uint256 _feeAmount = (_amountSell * feePercent) / 100;
+        require(
+            tokens[_tokenBuy][msg.sender] >= _amountBuy,
+            "Not enough tokens"
+        );
+        uint256 _feeAmount = (_amountBuy * feePercent) / 100;
 
-        tokens[_tokenBuy][msg.sender] -= _amountBuy;
+        tokens[_tokenBuy][msg.sender] -= _amountBuy + _feeAmount;
         tokens[_tokenBuy][_user] += _amountBuy;
-        tokens[_tokenSell][msg.sender] += _amountSell - _feeAmount;
+        tokens[_tokenSell][msg.sender] += _amountSell;
         tokens[_tokenSell][_user] -= _amountSell;
-        tokens[_tokenSell][feeAccount] += _feeAmount;
+        tokens[_tokenBuy][feeAccount] += _feeAmount;
 
         emit Trade(
             _id,
